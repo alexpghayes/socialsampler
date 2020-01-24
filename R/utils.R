@@ -9,3 +9,7 @@
 #' @importFrom magrittr %>%
 #' @usage lhs \%>\% rhs
 NULL
+
+empty_edgelist <- function() {
+  tibble::tibble(from = character(), to = character())
+}

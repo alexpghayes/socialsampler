@@ -1,59 +1,3 @@
-# probably should give these like 5 attempts or something like
-# that just in case
-
-# TODO: fancy sampling
-safe_get_friends <- function(node, token = NULL, ...) {
-
-  stopifnot(length(node) == 1)
-
-  friends <- rtweet::get_friends(node, token = token, verbose = FALSE, ...)
-
-  if (nrow(friends) == 0)
-    return(empty_edge_data)
-
-  colnames(friends) <- c("from", "to")
-  friends
-}
-
-safe_get_followers <- function(node, token = NULL, ...) {
-
-  stopifnot(length(node) == 1)
-
-  followers <- rtweet::get_followers(node, token = token, verbose = FALSE, ...)
-
-  if (all(is.na(followers$user_id)))
-    return(empty_edge_data)
-
-  colnames(followers) <- "from"
-  followers$to <- node
-
-  followers
-}
-
-safe_lookup_users <- function(user_id, attempts) {
-
-  if (length(user_id) > 90000)
-    stop("TODO request less data")
-
-  for (i in 1:attempts) {
-
-    token <- find_token("users/lookup")
-
-    user_data <- tryCatch({
-      rtweet::lookup_users(users = user_id, token = token)
-    }, error = function(cond) {
-      NULL
-    }, warning = function(cond) {
-      NULL
-    })
-
-    if (!is.null(user_data))
-      break
-  }
-
-  user_data
-}
-
 #' Title
 #'
 #' # document why no arguments for token, parse, retryonratelimit, or n
@@ -67,11 +11,19 @@ safe_lookup_users <- function(user_id, attempts) {
 #' @export
 #'
 #' @importFrom rtweet get_friends
-safe_get_friends <- function(users, attempts, page, verbose) {
+limited_get_friends <- function(users, attempts, page, verbose) {
+
+  num_requests <- length(users)
+
+  if (num_requests > 15)
+    stop(
+      "Must request friends of <=15 users at a time.",
+      call. = FALSE
+    )
 
   for (i in 1:attempts) {
 
-    token <- find_token("friends/ids")
+    token <- find_token("friends/ids", num_requests)
 
     friends <- tryCatch({
       rtweet::get_friends(users, token = token, verbose = verbose)
@@ -86,7 +38,7 @@ safe_get_friends <- function(users, attempts, page, verbose) {
   }
 
   if (nrow(friends) == 0)
-    stop("TODO") # return(empty_edgelist())
+    return(empty_edgelist())
 
   colnames(friends) <- c("from", "to")
   friends
@@ -104,13 +56,21 @@ safe_get_friends <- function(users, attempts, page, verbose) {
 #'
 #' @importFrom rtweet get_followers
 #'
-safe_get_followers <- function(users, attempts, page, verbose) {
+limited_get_followers <- function(users, attempts, page, verbose) {
+
+  num_requests <- length(users)
+
+  if (num_requests > 15)
+    stop(
+      "Must request followers of <=15 users at a time.",
+      call. = FALSE
+    )
 
   for (i in 1:attempts) {
 
-    token <- find_token("followers/ids")
+    token <- find_token("followers/ids", num_requests)
 
-    friends <- tryCatch({
+    followers <- tryCatch({
       rtweet::get_followers(users, token = token, verbose = verbose)
     }, error = function(cond) {
       NULL
@@ -122,10 +82,8 @@ safe_get_followers <- function(users, attempts, page, verbose) {
       break
   }
 
-  followers <- rtweet::get_followers(node, token = token, verbose = FALSE, ...)
-
   if (all(is.na(followers$user_id)) || nrow(followers) == 0)
-    stop("TODO") # return(empty_edgelist())
+    return(empty_edgelist())
 
   colnames(followers) <- "from"
   followers$to <- node
@@ -133,11 +91,19 @@ safe_get_followers <- function(users, attempts, page, verbose) {
   followers
 }
 
-safe_lookup_users <- function(user_id, attempts) {
+limited_lookup_users <- function(users, attempts) {
 
-  token <- find_token("users/lookup")
+  num_requests <- length(users)
+
+  if (num_requests > 90000)
+    stop(
+      "Must request user data of <=90000 users at a time.",
+      call. = FALSE
+    )
 
   for (i in 1:attempts) {
+
+    token <- find_token("users/lookup", num_requests)
 
     user_data <- tryCatch({
       rtweet::lookup_users(users = user_id, token = token)
@@ -153,3 +119,40 @@ safe_lookup_users <- function(user_id, attempts) {
 
   user_data
 }
+
+limited_get_timelines <- function(
+  user, n = 100, max_id = NULL, home = FALSE, ...) {
+
+  num_requests <- length(user)
+
+  if (num_requests > 900)
+    stop(
+      "Must request timelines of <=900 users at a time.",
+      call. = FALSE
+    )
+
+  for (i in 1:attempts) {
+
+    token <- find_token("statuses/user_timeline", num_requests)
+
+    user_data <- tryCatch({
+      rtweet::get_timeline(
+        users = users,
+        max_id = max_id,
+        home = home,
+        token = token
+      )
+    }, error = function(cond) {
+      NULL
+    }, warning = function(cond) {
+      NULL
+    })
+
+    if (!is.null(user_data))
+      break
+  }
+
+  user_data
+
+}
+
