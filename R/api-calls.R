@@ -107,9 +107,9 @@ safe_get_followers <- function(user, n = 5000, page = -1, verbose = FALSE,
 
   num_requests <- length(user)
 
-  if (num_requests > 15)
+  if (num_requests > 1)
     stop(
-      "Must request followers of <=15 users at a time.",
+      "Must request followers of 1 user at a time.",
       call. = FALSE
     )
 
@@ -118,22 +118,22 @@ safe_get_followers <- function(user, n = 5000, page = -1, verbose = FALSE,
     token <- find_token("followers/ids", num_requests)
 
     followers <- tryCatch({
-      rtweet::get_followers(users, token = token, verbose = verbose)
+      rtweet::get_followers(user, token = token, verbose = verbose)
     }, error = function(cond) {
       NULL
     }, warning = function(cond) {
       NULL
     })
 
-    if (!is.null(friends))
+    if (!is.null(followers))
       break
   }
 
   if (all(is.na(followers$user_id)) || nrow(followers) == 0)
-    return(empty_edgelist())
+    return(tibbleempty_edgelist())
 
   colnames(followers) <- "from"
-  followers$to <- node
+  followers$to <- user
 
   followers
 }
@@ -181,7 +181,7 @@ safe_lookup_users <- function(users, attempts = 5) {
     token <- find_token("users/lookup", num_requests)
 
     user_data <- tryCatch({
-      rtweet::lookup_users(users = user_id, token = token)
+      rtweet::lookup_users(users = users, token = token)
     }, error = function(cond) {
       NULL
     }, warning = function(cond) {
