@@ -175,13 +175,15 @@ get_all_tokens <- function() {
 
   for (index in 1:nrow(token_db)) {
 
-    user_token <- create_token(
-      app = "socialsampler",
-      token_db$api_key[index],
-      token_db$api_secret[index],
-      token_db$access_token[index],
-      token_db$access_secret[index],
-      set_renv = FALSE
+    suppressWarnings(
+      user_token <- create_token(
+        app = "socialsampler",
+        token_db$api_key[index],
+        token_db$api_secret[index],
+        token_db$access_token[index],
+        token_db$access_secret[index],
+        set_renv = FALSE
+      )
     )
 
     user_tokens[[index]] <- user_token
