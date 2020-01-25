@@ -81,7 +81,7 @@ many tokens you have, you can use:
 ``` r
 inspect_token_db()
 #> Your socialsampler token database has
-#>   - 10 registered node(s)
+#>   - 10 registered token(s)
 ```
 
 You can import `rtweet` tokens into the database via

@@ -43,7 +43,7 @@ inspect_token_db <- function() {
 
   glue::glue(
     "Your socialsampler token database has\n",
-    "  - {num_tokens} registered node(s)",
+    "  - {num_tokens} registered token(s)",
     .trim = FALSE
   )
 }
