@@ -13,3 +13,17 @@ NULL
 empty_edgelist <- function() {
   tibble::tibble(from = character(), to = character())
 }
+
+utils::globalVariables(
+  c(
+    "app",
+    "attempts",
+    "friends",
+    "limit",
+    "node",
+    "remaining",
+    "token",
+    "user_id",
+    "users"
+  )
+)

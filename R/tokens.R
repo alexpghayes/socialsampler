@@ -18,12 +18,21 @@ create_token_db_if_needed <- function() {
   }
 }
 
-#' TODO
+#' Inspect the socialsampler token database
 #'
-#' @return
+#' Prints information on the number of tokens registered with
+#' `socialsampler`. If you haven't registered an tokens,
+#' sampling function will use the default `rtweet` token,
+#' and barring this, will give an error that tokens have
+#' been registered with neither `rtweet` or `socialsampler`.
+#'
 #' @export
+#' @family tokens
 #'
-print_token_db <- function() {
+#' @seealso [rtweet::get_token()], [rtweet::create_token()],
+#'   [rtweet::bearer_token()]
+#'
+inspect_token_db <- function() {
 
   if (!token_db_exists())
     stop(
@@ -39,13 +48,12 @@ print_token_db <- function() {
   )
 }
 
-#' Remove all sampled users from the cache
+#' Remove all tokens for the token database
 #'
-#' Will ask you for confirmation before proceeding because
-#' of the how time consuming it is to sample users.
+#' Will ask you for confirmation before proceeding.
 #'
 #' @export
-#' @family cache management
+#' @family tokens
 #'
 unregister_all_tokens <- function() {
 
@@ -67,12 +75,15 @@ unregister_all_tokens <- function() {
 #' For more details on how to get tokens please read
 #' `vignette("auth", package = "rtweet")`.
 #'
-#' @param token A Twitter auth token token created by
-#'   [rtweet::create_token()].
+#' @param api_key Twitter application API key (character).
+#' @param api_secret Twitter application API secret (character).
+#' @param access_token Twitter access token (character).
+#' @param access_secret Twitter accces secret (character).
 #'
 #' @export
 #'
-#' @family managing tokens
+#' @family tokens
+#' @seealso [rtweet::create_token()]
 #'
 #' @importFrom dplyr distinct bind_rows
 #' @importFrom readr read_rds write_rds
@@ -93,7 +104,7 @@ register_token <- function(api_key, api_secret, access_token, access_secret) {
   updated_db <- distinct(bind_rows(token_db, new_token))
 
   if (nrow(updated_db) == nrow(token_db))
-    stop(
+    warning(
       "Token has already been registered with socialsampler.",
       call. = FALSE
     )
@@ -102,8 +113,12 @@ register_token <- function(api_key, api_secret, access_token, access_secret) {
   invisible()
 }
 
+#' Import tokens registered with rtweet into the socialsampler token database
+#'
+#' @export
+#' @family tokens
+#'
 import_tokens_from_rtweet <- function() {
-
 
   token_paths <- list.files(
     "~",
@@ -112,21 +127,33 @@ import_tokens_from_rtweet <- function() {
     full.names = TRUE
   )
 
-  path <- token_paths[19]
+  for (path in token_paths) {
 
-  token <- readr::read_rds(path)
+    token <- readr::read_rds(path)
 
-  token$app
-
-
+    register_token(
+      api_key = token$app$key,
+      api_secret = token$app$secret,
+      access_token = token$credentials$oauth_token,
+      access_secret = token$credentials$oauth_token_secret
+    )
+  }
 }
 
 
-#' Title
+#' Get all tokens from the social sampler database
 #'
-#' @return
+#' Mainly for internal `socialsampler` use.
+#'
+#' @return A list of all tokens in the `socialsampler` database
+#'   as well as the accompanying bearer tokens. Note that user
+#'   tokens and bearer tokens have different classes and behave
+#'   slightly differently.
+#'
 #' @export
+#' @family tokens
 #' @importFrom rtweet get_token create_token bearer_token
+#'
 get_all_tokens <- function() {
 
   if (!token_db_exists() && Sys.getenv("TWITTER_PAT") == "")
@@ -143,7 +170,8 @@ get_all_tokens <- function() {
 
   token_db <- read_rds(get_token_db_path())
 
-  tokens <- list()
+  user_tokens <- list()
+  bearer_tokens <- list()
 
   for (index in 1:nrow(token_db)) {
 
@@ -156,10 +184,10 @@ get_all_tokens <- function() {
       set_renv = FALSE
     )
 
-    tokens <- append(tokens, user_token)
-    tokens <- append(tokens, list(bearer_token(user_token)))
+    user_tokens[[index]] <- user_token
+    bearer_tokens[[index]] <- bearer_token(user_token)
   }
 
-  tokens
+  c(user_tokens, bearer_tokens)
 }
 

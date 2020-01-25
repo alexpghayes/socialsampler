@@ -7,8 +7,13 @@
 register_token(api_key, api_secret, access_token, access_secret)
 }
 \arguments{
-\item{token}{A Twitter auth token token created by
-[rtweet::create_token()].}
+\item{api_key}{Twitter application API key (character).}
+
+\item{api_secret}{Twitter application API secret (character).}
+
+\item{access_token}{Twitter access token (character).}
+
+\item{access_secret}{Twitter accces secret (character).}
 }
 \description{
 If you try to register a token already in the cache,
@@ -17,6 +22,15 @@ creating duplicate entries in the token cache.
 }
 \details{
 For more details on how to get tokens please read
-`vignette("auth", package = "rtweet")`.
+\code{vignette("auth", package = "rtweet")}.
 }
-\concept{managing tokens}
+\seealso{
+\code{\link[rtweet:create_token]{rtweet::create_token()}}
+
+Other tokens: 
+\code{\link{get_all_tokens}()},
+\code{\link{import_tokens_from_rtweet}()},
+\code{\link{inspect_token_db}()},
+\code{\link{unregister_all_tokens}()}
+}
+\concept{tokens}

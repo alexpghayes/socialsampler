@@ -1,17 +1,40 @@
-#' Title
+#' Safely get friend list of Twitter users
 #'
-#' # document why no arguments for token, parse, retryonratelimit, or n
+#' `safe_get_friends()` is a drop-in replacement for
+#' [rtweet::get_friends()] that automatically respects
+#' Twitter API rate limits and coordinates use of
+#' multiple Twitter access tokens that have been
+#' registered with [register_token()]. At the moment
+#' you can only request the friends list of 15 or
+#' fewer users in a single call.
 #'
-#' @param users
-#' @param attempts
-#' @param page
-#' @param verbose
+#' If no tokens have been registered with `socialsampler`,
+#' `safe_get_friends()` will look for a token registered
+#' with `rtweet` and use that token instead, again
+#' automatically respecting rate limits. If no tokens have
+#' been registered with either `socialsampler` or `rtweet`,
+#' you'll get an error.
 #'
-#' @return
+#' @inheritParams rtweet::get_friends
+#'
+#' @param attempts How many times should we attempt to access the Twitter
+#'   API before giving up? Defaults to 5.
+#'
+#' @return An edgelist with columns:
+#'
+#'   - `from`: A character vector of node ids. This will match the
+#'     input format of `users`. That is, if `users` consists of
+#'     screen names, `from` will consist of screen names. If
+#'     `users` consists of user IDs, `from` will as well.
+#'
+#'   - `to`: A character vector of node ids.
+#'
 #' @export
 #'
 #' @importFrom rtweet get_friends
-limited_get_friends <- function(users, attempts, page, verbose) {
+#'
+safe_get_friends <- function(users, n = 5000, page = -1, verbose = FALSE,
+                             attempts = 5) {
 
   num_requests <- length(users)
 
@@ -26,7 +49,7 @@ limited_get_friends <- function(users, attempts, page, verbose) {
     token <- find_token("friends/ids", num_requests)
 
     friends <- tryCatch({
-      rtweet::get_friends(users, token = token, verbose = verbose)
+      rtweet::get_friends(users, n = n, token = token, verbose = verbose)
     }, error = function(cond) {
       NULL
     }, warning = function(cond) {
@@ -37,28 +60,52 @@ limited_get_friends <- function(users, attempts, page, verbose) {
       break
   }
 
-  if (nrow(friends) == 0)
+  if (is.null(friends) || nrow(friends) == 0)
     return(empty_edgelist())
 
   colnames(friends) <- c("from", "to")
   friends
 }
 
-#' Title
+#' Safely get follower list of Twitter users
 #'
-#' @param users
-#' @param attempts
-#' @param page
-#' @param verbose
+#' `safe_get_followers()` is a drop-in replacement for
+#' [rtweet::get_followers()] that automatically respects
+#' Twitter API rate limits and coordinates use of
+#' multiple Twitter access tokens that have been
+#' registered with [register_token()]. At the moment
+#' you can only request the friends list of 15 or
+#' fewer users in a single call.
 #'
-#' @return
+#' If no tokens have been registered with `socialsampler`,
+#' `safe_get_followers()` will look for a token registered
+#' with `rtweet` and use that token instead, again
+#' automatically respecting rate limits. If no tokens have
+#' been registered with either `socialsampler` or `rtweet`,
+#' you'll get an error.
+#'
+#' @inheritParams rtweet::get_followers
+#'
+#' @param attempts How many times should we attempt to access the Twitter
+#'   API before giving up? Defaults to 5.
+#'
+#' @return An edgelist with columns:
+#'
+#'   - `from`: A character vector of node ids. This will match the
+#'     input format of `users`. That is, if `users` consists of
+#'     screen names, `from` will consist of screen names. If
+#'     `users` consists of user IDs, `from` will as well.
+#'
+#'   - `to`: A character vector of node ids.
+#'
 #' @export
 #'
 #' @importFrom rtweet get_followers
 #'
-limited_get_followers <- function(users, attempts, page, verbose) {
+safe_get_followers <- function(user, n = 5000, page = -1, verbose = FALSE,
+                               attempts = 5) {
 
-  num_requests <- length(users)
+  num_requests <- length(user)
 
   if (num_requests > 15)
     stop(
@@ -91,7 +138,35 @@ limited_get_followers <- function(users, attempts, page, verbose) {
   followers
 }
 
-limited_lookup_users <- function(users, attempts) {
+#' Safely lookup Twitter users
+#'
+#' `safe_lookup_users()` is a drop-in replacement for
+#' [rtweet::lookup_users()] that automatically respects
+#' Twitter API rate limits and coordinates use of
+#' multiple Twitter access tokens that have been
+#' registered with [register_token()]. At the moment
+#' you can only request the friends list of 15 or
+#' fewer users in a single call.
+#'
+#' If no tokens have been registered with `socialsampler`,
+#' `safe_lookup_users()` will look for a token registered
+#' with `rtweet` and use that token instead, again
+#' automatically respecting rate limits. If no tokens have
+#' been registered with either `socialsampler` or `rtweet`,
+#' you'll get an error.
+#'
+#' @inheritParams rtweet::lookup_users
+#'
+#' @param attempts How many times should we attempt to access the Twitter
+#'   API before giving up? Defaults to 5.
+#'
+#' @inherit rtweet::lookup_users return
+#'
+#' @export
+#'
+#' @importFrom rtweet lookup_users
+#'
+safe_lookup_users <- function(users, attempts = 5) {
 
   num_requests <- length(users)
 
@@ -120,14 +195,42 @@ limited_lookup_users <- function(users, attempts) {
   user_data
 }
 
-limited_get_timelines <- function(
-  user, n = 100, max_id = NULL, home = FALSE, ...) {
+#' Safely sample Twitter user timelines
+#'
+#' `safe_get_timelines()` is a drop-in replacement for
+#' [rtweet::get_timelines()] that automatically respects
+#' Twitter API rate limits and coordinates use of
+#' multiple Twitter access tokens that have been
+#' registered with [register_token()]. At the moment
+#' you can only request the friends list of 15 or
+#' fewer users in a single call.
+#'
+#' If no tokens have been registered with `socialsampler`,
+#' `safe_get_timelines()` will look for a token registered
+#' with `rtweet` and use that token instead, again
+#' automatically respecting rate limits. If no tokens have
+#' been registered with either `socialsampler` or `rtweet`,
+#' you'll get an error.
+#'
+#' @inheritParams rtweet::get_timelines
+#'
+#' @param attempts How many times should we attempt to access the Twitter
+#'   API before giving up? Defaults to 5.
+#'
+#' @inherit rtweet::get_timelines return
+#'
+#' @export
+#'
+#' @importFrom rtweet get_timelines
+#'
+safe_get_timelines <- function(user, n = 100, max_id = NULL, home = FALSE,
+                               attempts = 5) {
 
   num_requests <- length(user)
 
-  if (num_requests > 900)
+  if (num_requests > 1500)
     stop(
-      "Must request timelines of <=900 users at a time.",
+      "Must request timelines of <=1500 users at a time.",
       call. = FALSE
     )
 
@@ -135,7 +238,7 @@ limited_get_timelines <- function(
 
     token <- find_token("statuses/user_timeline", num_requests)
 
-    user_data <- tryCatch({
+    timeline_data <- tryCatch({
       rtweet::get_timeline(
         users = users,
         max_id = max_id,
@@ -148,11 +251,10 @@ limited_get_timelines <- function(
       NULL
     })
 
-    if (!is.null(user_data))
+    if (!is.null(timeline_data))
       break
   }
 
-  user_data
-
+  timeline_data
 }
 

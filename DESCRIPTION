@@ -1,23 +1,31 @@
 Package: socialsampler
-Title: What the Package Does (One Line, Title Case)
+Title: Tools to facilitate sampling Twitter data
 Version: 0.0.0.9000
 Authors@R: 
-    person(given = "First",
-           family = "Last",
+    person(given = "Alex",
+           family = "Hayes",
            role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: What license it uses
-Encoding: UTF-8
-LazyData: true
-Imports: 
-    tibble,
-    dplyr,
-    readr,
-    glue,
-    magrittr,
-    purrr
-RoxygenNote: 7.0.2
+           email = "alexpghayes@gmail.com",
+           comment = c(ORCID = "0000-0002-4985-5160"))
+Description: Extends rtweet with additional functionality to gracefully
+    handle multiple tokens, to automatically use bearer tokens
+    for increased sampling capacity, and to automatically retry failed
+    API requests.
+License: MIT + file LICENSE
 URL: https://github.com/alexpghayes/socialsampler
 BugReports: https://github.com/alexpghayes/socialsampler/issues
+Depends:
+    R (>= 3.3)
+Imports: 
+    dplyr,
+    glue,
+    magrittr,
+    purrr,
+    readr,
+    tibble,
+    rtweet,
+    usethis
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.0.2

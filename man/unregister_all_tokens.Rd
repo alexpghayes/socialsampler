@@ -2,12 +2,18 @@
 % Please edit documentation in R/tokens.R
 \name{unregister_all_tokens}
 \alias{unregister_all_tokens}
-\title{Remove all sampled users from the cache}
+\title{Remove all tokens for the token database}
 \usage{
 unregister_all_tokens()
 }
 \description{
-Will ask you for confirmation before proceeding because
-of the how time consuming it is to sample users.
+Will ask you for confirmation before proceeding.
 }
-\concept{cache management}
+\seealso{
+Other tokens: 
+\code{\link{get_all_tokens}()},
+\code{\link{import_tokens_from_rtweet}()},
+\code{\link{inspect_token_db}()},
+\code{\link{register_token}()}
+}
+\concept{tokens}
