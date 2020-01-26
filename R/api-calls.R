@@ -46,15 +46,23 @@ safe_get_friends <- function(users, n = 5000, page = -1, verbose = FALSE,
 
   for (i in 1:attempts) {
 
-    token <- find_token("friends/ids", num_requests)
+    t <- find_token("friends/ids", num_requests)
 
     friends <- tryCatch({
-      rtweet::get_friends(users, n = n, token = token, verbose = verbose)
+      rtweet::get_friends(users, n = n, token = t$token, verbose = verbose)
     }, error = function(cond) {
+      warning(cond)
       NULL
     }, warning = function(cond) {
+      warning(cond)
       NULL
     })
+
+    update_rate_table(
+      query = "friends/ids",
+      token_id = t$token_id,
+      used = num_requests
+    )
 
     if (!is.null(friends))
       break
@@ -115,22 +123,30 @@ safe_get_followers <- function(user, n = 5000, page = -1, verbose = FALSE,
 
   for (i in 1:attempts) {
 
-    token <- find_token("followers/ids", num_requests)
+    t <- find_token("followers/ids", num_requests)
 
     followers <- tryCatch({
-      rtweet::get_followers(user, token = token, verbose = verbose)
+      rtweet::get_followers(user, token = t$token, verbose = verbose)
     }, error = function(cond) {
+      warning(cond)
       NULL
     }, warning = function(cond) {
+      warning(cond)
       NULL
     })
+
+    update_rate_table(
+      query = "followers/ids",
+      token_id = t$token_id,
+      used = num_requests
+    )
 
     if (!is.null(followers))
       break
   }
 
   if (all(is.na(followers$user_id)) || nrow(followers) == 0)
-    return(tibbleempty_edgelist())
+    return(empty_edgelist())
 
   colnames(followers) <- "from"
   followers$to <- user
@@ -178,13 +194,15 @@ safe_lookup_users <- function(users, attempts = 5) {
 
   for (i in 1:attempts) {
 
-    token <- find_token("users/lookup", num_requests)
+    t <- find_token("users/lookup", num_requests)
 
     user_data <- tryCatch({
-      rtweet::lookup_users(users = users, token = token)
+      rtweet::lookup_users(users = users, token = t$token)
     }, error = function(cond) {
+      warning(cond)
       NULL
     }, warning = function(cond) {
+      warning(cond)
       NULL
     })
 
@@ -236,20 +254,26 @@ safe_get_timelines <- function(user, n = 100, max_id = NULL, home = FALSE,
 
   for (i in 1:attempts) {
 
+    message(glue::glue("Attempt {i}"))
+
     token <- find_token("statuses/user_timeline", num_requests)
 
     timeline_data <- tryCatch({
       rtweet::get_timeline(
-        users = users,
+        users = user,
         max_id = max_id,
         home = home,
         token = token
       )
     }, error = function(cond) {
+      warning(cond)
       NULL
     }, warning = function(cond) {
+      warning(cond)
       NULL
     })
+
+    print(timeline_data)
 
     if (!is.null(timeline_data))
       break

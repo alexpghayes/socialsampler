@@ -177,7 +177,7 @@ get_all_tokens <- function() {
 
     suppressWarnings(
       user_token <- create_token(
-        app = "socialsampler",
+        app = paste0("socialsampler", index),
         token_db$api_key[index],
         token_db$api_secret[index],
         token_db$access_token[index],

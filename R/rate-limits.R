@@ -23,9 +23,9 @@
 #' @importFrom dplyr filter arrange
 find_token <- function(query, requests) {
 
-  tokens <- get_all_tokens()
+  message(Sys.time(), " Called find_token()")
 
-  possible_tokens <- safe_rate_limit(tokens) %>%
+  possible_tokens <- get_rate_table() %>%
     filter(query == !!query, requests <= limit)
 
   if (nrow(possible_tokens) == 0)
@@ -42,22 +42,92 @@ find_token <- function(query, requests) {
 
   # wait the shortest amount of time for the query to reset
   if (!any_available_token) {
-    min_until_reset <- min(possible_tokens$reset)
 
-    message(
-      "API calls exhausted. Waiting ",
-      round(min_until_reset * 60),
-      " seconds."
-    )
+    secs_until_reset <- as.numeric(
+      min(possible_tokens$reset_at - Sys.time()),
+      units = "secs"
+    ) + 5
 
-    Sys.sleep(min_until_reset * 60)
+    if (secs_until_reset >= 0) {
+      message(
+        Sys.time(),
+        " API calls exhausted. Waiting ",
+        prettyunits::pretty_sec(secs_until_reset)
+      )
+
+      Sys.sleep(secs_until_reset)
+    } else {
+
+      wait_until <- ..last_update.. + lubridate::minutes(15)
+
+      time_to_wait <- as.numeric(
+        wait_until - Sys.time(),
+        units = "secs"
+      )
+
+      message(
+        Sys.time(),
+        " Need to synchronize with Twitter. Waiting ",
+        prettyunits::pretty_sec(time_to_wait)
+      )
+
+      if (time_to_wait > 0)
+        Sys.sleep(time_to_wait)
+      else
+        warning("Negative time to wait LOL WHY")
+
+    }
+
+
     return(find_token(query, requests))
   }
 
+  tokens <- get_all_tokens()
+
   # return the least flexible token that meets has sufficient
   # remaining requests
-  index <- available_tokens$id[1]
-  tokens[[index]]
+  token_id <- available_tokens$id[1]
+  list(token_id = token_id, token = tokens[[token_id]])
+}
+
+get_rate_table <- function() {
+
+  message("Getting rate table")
+
+  update <- FALSE
+
+  if (!exists("..rate_limit_table..")) {
+    update <- TRUE
+  } else {
+
+    time_since_last_update <- as.numeric(
+      Sys.time() - ..last_update..,
+      units = "mins"
+    )
+
+    if (time_since_last_update > 15)
+      update <- TRUE
+  }
+
+  if (update) {
+    message("Refreshing rate table with Twitter")
+    rate_table <- safe_rate_limit(get_all_tokens())
+    assign("..rate_limit_table..", rate_table, envir = globalenv())
+    assign("..last_update..", Sys.time(), envir = globalenv())
+  }
+
+  ..rate_limit_table..
+}
+
+update_rate_table <- function(query, token_id, used) {
+  ..rate_limit_table..[
+    ..rate_limit_table..$query == query &
+      ..rate_limit_table..$id == token_id,
+    "remaining"
+  ] <<- ..rate_limit_table..[
+    ..rate_limit_table..$query == query &
+      ..rate_limit_table..$id == token_id,
+  ]$remaining - used
 }
 
 # issue: rtweet has to make an API for *each token* separately
@@ -72,6 +142,11 @@ find_token <- function(query, requests) {
 #' @importFrom rtweet rate_limit
 safe_rate_limit <- function(tokens) {
 
+  message("Called safe_rate_limit()")
+
+  # TODO: this function requires that rtweet::rate_limit()
+  # doesn't exceed rate limits
+
   # assumes a very specific token order to match "id" / index
   # with actual rate limit
 
@@ -83,6 +158,10 @@ safe_rate_limit <- function(tokens) {
   num_tokens <- length(tokens)
 
   stopifnot(num_user_tokens + num_bearer_tokens == num_tokens)
+
+  # sanity check for duplicate tokens
+  stopifnot(length(unique(user_tokens)) == num_user_tokens)
+  stopifnot(length(unique(bearer_tokens)) == num_bearer_tokens)
 
   user_ids <- 1:num_user_tokens
   bearer_ids <- (num_user_tokens + 1):(num_user_tokens + num_bearer_tokens)
@@ -98,6 +177,7 @@ safe_rate_limit <- function(tokens) {
 
   user_rate_limits %>%
     select(-app) %>%
-    bind_rows(bearer_rate_limits)
+    bind_rows(bearer_rate_limits) %>%
+    select(-reset)
 }
 
