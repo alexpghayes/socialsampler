@@ -171,7 +171,8 @@ get_all_tokens <- function() {
   token_db <- read_rds(get_token_db_path())
 
   user_tokens <- list()
-  bearer_tokens <- list()
+
+  # TODO: why is there only a single bearer token??
 
   for (index in 1:nrow(token_db)) {
 
@@ -187,9 +188,8 @@ get_all_tokens <- function() {
     )
 
     user_tokens[[index]] <- user_token
-    bearer_tokens[[index]] <- bearer_token(user_token)
   }
 
-  c(user_tokens, bearer_tokens)
+  c(user_tokens, list(bearer_token(user_token)))
 }
 
