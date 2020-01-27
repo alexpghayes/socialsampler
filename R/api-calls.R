@@ -256,14 +256,14 @@ safe_get_timelines <- function(user, n = 100, max_id = NULL, home = FALSE,
 
     message(glue::glue("Attempt {i}"))
 
-    token <- find_token("statuses/user_timeline", num_requests)
+    t <- find_token("statuses/user_timeline", num_requests)
 
     timeline_data <- tryCatch({
       rtweet::get_timeline(
-        users = user,
+        user = user,
         max_id = max_id,
         home = home,
-        token = token
+        token = t$token
       )
     }, error = function(cond) {
       warning(cond)
@@ -272,8 +272,6 @@ safe_get_timelines <- function(user, n = 100, max_id = NULL, home = FALSE,
       warning(cond)
       NULL
     })
-
-    print(timeline_data)
 
     if (!is.null(timeline_data))
       break
