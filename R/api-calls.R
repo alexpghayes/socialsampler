@@ -213,6 +213,8 @@ safe_lookup_users <- function(users, attempts = 5) {
   user_data
 }
 
+
+
 #' Safely sample Twitter user timelines
 #'
 #' `safe_get_timelines()` is a drop-in replacement for
@@ -263,6 +265,7 @@ safe_get_timelines <- function(user, n = 100, max_id = NULL, home = FALSE,
         user = user,
         max_id = max_id,
         home = home,
+        n = n,
         token = t$token
       )
     }, error = function(cond) {

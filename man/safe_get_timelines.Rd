@@ -21,7 +21,7 @@ older than) or equal to `max_id`.}
 or home-timeline. By default, home is set to FALSE, which means
 \code{get_timeline} returns tweets posted by the given user. To
 return a user's home timeline feed, that is, the tweets posted by
-accounts followed by a user, set the home to false.}
+accounts followed by a user, set home to TRUE.}
 
 \item{attempts}{How many times should we attempt to access the Twitter
 API before giving up? Defaults to 5.}

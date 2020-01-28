@@ -23,7 +23,9 @@
 #' @importFrom dplyr filter arrange
 find_token <- function(query, requests) {
 
-  message(Sys.time(), " Called find_token()")
+  log_debug(
+    glue("Called find_token(query = \"{query}\", requests = {requests})")
+  )
 
   possible_tokens <- get_rate_table() %>%
     filter(query == !!query, requests <= limit)
@@ -92,7 +94,7 @@ find_token <- function(query, requests) {
 
 get_rate_table <- function() {
 
-  message("Getting rate table")
+  log_debug("Getting rate table")
 
   update <- FALSE
 
@@ -110,7 +112,7 @@ get_rate_table <- function() {
   }
 
   if (update) {
-    message("Refreshing rate table with Twitter")
+    log_debug("Refreshing rate table with Twitter")
     rate_table <- safe_rate_limit(get_all_tokens())
     assign("..rate_limit_table..", rate_table, envir = globalenv())
     assign("..last_update..", Sys.time(), envir = globalenv())
@@ -142,7 +144,7 @@ update_rate_table <- function(query, token_id, used) {
 #' @importFrom rtweet rate_limit
 safe_rate_limit <- function(tokens) {
 
-  message("Called safe_rate_limit()")
+  log_debug("Called safe_rate_limit()")
 
   # TODO: this function requires that rtweet::rate_limit()
   # doesn't exceed rate limits

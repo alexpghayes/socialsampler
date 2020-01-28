@@ -14,7 +14,7 @@ twitter_friends_rate_table <- function() {
 
 
 
-for (i in 1:350) {
+for (i in 1:340) {
   message(
     glue::glue(
       "Making query {i}"
