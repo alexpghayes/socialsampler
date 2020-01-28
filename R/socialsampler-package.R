@@ -7,7 +7,6 @@
 ## usethis namespace: end
 NULL
 
-
 #' @import logger
 #' @importFrom glue glue
 NULL

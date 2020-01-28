@@ -41,10 +41,12 @@ inspect_token_db <- function() {
 
   num_tokens <- nrow(read_rds(get_token_db_path()))
 
-  glue::glue(
-    "Your socialsampler token database has\n",
-    "  - {num_tokens} registered token(s)",
-    .trim = FALSE
+  print(
+    glue(
+      "Your socialsampler token database has\n",
+      "  - {num_tokens} registered token(s)",
+      .trim = FALSE
+    )
   )
 }
 

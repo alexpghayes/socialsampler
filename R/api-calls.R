@@ -184,11 +184,11 @@ safe_get_followers <- function(user, n = 5000, page = -1, verbose = FALSE,
 #'
 safe_lookup_users <- function(users, attempts = 5) {
 
-  num_requests <- length(users)
+  num_requests <- ceiling(length(users) / 100)
 
-  if (num_requests > 90000)
+  if (num_requests > 900)
     stop(
-      "Must request user data of <=90000 users at a time.",
+      "Must request user data on <=90000 users at a time.",
       call. = FALSE
     )
 
@@ -205,6 +205,12 @@ safe_lookup_users <- function(users, attempts = 5) {
       warning(cond)
       NULL
     })
+
+    update_rate_table(
+      query = "users/lookup",
+      token_id = t$token_id,
+      used = num_requests
+    )
 
     if (!is.null(user_data))
       break
@@ -254,9 +260,12 @@ safe_get_timelines <- function(user, n = 100, max_id = NULL, home = FALSE,
       call. = FALSE
     )
 
+  if (home)
+    stop("`home = TRUE` is not yet supported.", call. = FALSE)
+
   for (i in 1:attempts) {
 
-    message(glue::glue("Attempt {i}"))
+    log_debug(glue("safe_get_timelines(): Attempt {i}"))
 
     t <- find_token("statuses/user_timeline", num_requests)
 
@@ -275,6 +284,12 @@ safe_get_timelines <- function(user, n = 100, max_id = NULL, home = FALSE,
       warning(cond)
       NULL
     })
+
+    update_rate_table(
+      query = "statuses/user_timeline",
+      token_id = t$token_id,
+      used = num_requests
+    )
 
     if (!is.null(timeline_data))
       break

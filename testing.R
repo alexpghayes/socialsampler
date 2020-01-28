@@ -1,4 +1,11 @@
 
+
+safe_get_friends("alexpghayes")
+safe_get_followers("alexpghayes")
+safe_lookup_users("alexpghayes")
+safe_get_timelines("alexpghayes")
+
+
 local_friends_rate_table <- function() {
   get_rate_table() %>%
     filter(query == "friends/ids") %>%
