@@ -1,3 +1,14 @@
+# API RATE LIMIT INFORMATION INFORMATION // 2020-02-25
+#
+# 15 minute windows
+#
+# endpoint                   | requests (user auth) / requests (app auth)
+# GET followers/ids	         | 15 /	15
+# GET friends/ids            | 15	/ 15
+# GET users/lookup	         | 900 / 300
+# GET statuses/user_timeline | 900 / 1500
+
+
 #' Safely get friend list of Twitter users
 #'
 #' `safe_get_friends()` is a drop-in replacement for
@@ -46,10 +57,11 @@ safe_get_friends <- function(users, n = 5000, page = -1, verbose = FALSE,
 
   for (i in 1:attempts) {
 
-    t <- find_token("friends/ids", num_requests)
+    token <- find_token("friends/ids", num_requests)
 
     friends <- tryCatch({
-      rtweet::get_friends(users, n = n, token = t$token, verbose = verbose)
+      rtweet::get_friends(users, n = n, page = page,
+                          token = token, verbose = verbose)
     }, error = function(cond) {
       warning(cond)
       NULL
@@ -57,12 +69,6 @@ safe_get_friends <- function(users, n = 5000, page = -1, verbose = FALSE,
       warning(cond)
       NULL
     })
-
-    update_rate_table(
-      query = "friends/ids",
-      token_id = t$token_id,
-      used = num_requests
-    )
 
     if (!is.null(friends))
       break
@@ -123,10 +129,10 @@ safe_get_followers <- function(user, n = 5000, page = -1, verbose = FALSE,
 
   for (i in 1:attempts) {
 
-    t <- find_token("followers/ids", num_requests)
+    token <- find_token("followers/ids", num_requests)
 
     followers <- tryCatch({
-      rtweet::get_followers(user, token = t$token, verbose = verbose)
+      rtweet::get_followers(user, token = token, verbose = verbose)
     }, error = function(cond) {
       warning(cond)
       NULL
@@ -134,12 +140,6 @@ safe_get_followers <- function(user, n = 5000, page = -1, verbose = FALSE,
       warning(cond)
       NULL
     })
-
-    update_rate_table(
-      query = "followers/ids",
-      token_id = t$token_id,
-      used = num_requests
-    )
 
     if (!is.null(followers))
       break
@@ -194,10 +194,10 @@ safe_lookup_users <- function(users, attempts = 5) {
 
   for (i in 1:attempts) {
 
-    t <- find_token("users/lookup", num_requests)
+    token <- find_token("users/lookup", num_requests)
 
     user_data <- tryCatch({
-      rtweet::lookup_users(users = users, token = t$token)
+      rtweet::lookup_users(users = users, token = token)
     }, error = function(cond) {
       warning(cond)
       NULL
@@ -206,19 +206,12 @@ safe_lookup_users <- function(users, attempts = 5) {
       NULL
     })
 
-    update_rate_table(
-      query = "users/lookup",
-      token_id = t$token_id,
-      used = num_requests
-    )
-
     if (!is.null(user_data))
       break
   }
 
   user_data
 }
-
 
 
 #' Safely sample Twitter user timelines
@@ -267,7 +260,7 @@ safe_get_timelines <- function(user, n = 100, max_id = NULL, home = FALSE,
 
     log_debug(glue("safe_get_timelines(): Attempt {i}"))
 
-    t <- find_token("statuses/user_timeline", num_requests)
+    token <- find_token("statuses/user_timeline", num_requests)
 
     timeline_data <- tryCatch({
       rtweet::get_timeline(
@@ -275,7 +268,7 @@ safe_get_timelines <- function(user, n = 100, max_id = NULL, home = FALSE,
         max_id = max_id,
         home = home,
         n = n,
-        token = t$token
+        token = token
       )
     }, error = function(cond) {
       warning(cond)
@@ -284,12 +277,6 @@ safe_get_timelines <- function(user, n = 100, max_id = NULL, home = FALSE,
       warning(cond)
       NULL
     })
-
-    update_rate_table(
-      query = "statuses/user_timeline",
-      token_id = t$token_id,
-      used = num_requests
-    )
 
     if (!is.null(timeline_data))
       break
