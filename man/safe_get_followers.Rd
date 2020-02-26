@@ -4,12 +4,9 @@
 \alias{safe_get_followers}
 \title{Safely get follower list of Twitter users}
 \usage{
-safe_get_followers(user, n = 5000, page = -1, verbose = FALSE, attempts = 5)
+safe_get_followers(users, n = 5000, page = -1, verbose = FALSE, attempts = 5)
 }
 \arguments{
-\item{user}{Screen name or user ID of target user from which the
-user IDs of followers will be retrieved.}
-
 \item{n}{Number of followers to return. Defaults to 5000, which is
 the max number of followers returned by a single API
 request. Twitter allows up to 15 of these requests every 15

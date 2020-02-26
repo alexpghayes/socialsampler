@@ -47,38 +47,47 @@
 safe_get_friends <- function(users, n = 5000, page = -1, verbose = FALSE,
                              attempts = 5) {
 
-  num_requests <- length(users)
+  # split big request into chunks of size at most 15 users
 
-  if (num_requests > 15)
-    stop(
-      "Must request friends of <=15 users at a time.",
-      call. = FALSE
-    )
+  chunked_users <- split(users, ceiling(seq_along(users) / 15))
 
-  for (i in 1:attempts) {
+  handle_single_chunk <- function(chunk) {
 
-    token <- find_token("friends/ids", num_requests)
+    num_requests <- length(chunk)
 
-    friends <- tryCatch({
-      rtweet::get_friends(users, n = n, page = page,
-                          token = token, verbose = verbose)
-    }, error = function(cond) {
-      warning(cond)
-      NULL
-    }, warning = function(cond) {
-      warning(cond)
-      NULL
-    })
+    if (num_requests > 15)
+      stop(
+        "Must request friends of <=15 users at a time.",
+        call. = FALSE
+      )
 
-    if (!is.null(friends))
-      break
+    for (i in 1:attempts) {
+
+      token <- find_token("friends/ids", num_requests)
+
+      friends <- tryCatch({
+        rtweet::get_friends(chunk, n = n, page = page,
+                            token = token, verbose = verbose)
+      }, error = function(cond) {
+        warning(cond)
+        NULL
+      }, warning = function(cond) {
+        warning(cond)
+        NULL
+      })
+
+      if (!is.null(friends))
+        break
+    }
+
+    if (is.null(friends) || nrow(friends) == 0)
+      return(empty_edgelist())
+
+    colnames(friends) <- c("from", "to")
+    friends
   }
 
-  if (is.null(friends) || nrow(friends) == 0)
-    return(empty_edgelist())
-
-  colnames(friends) <- c("from", "to")
-  friends
+  purrr::map_dfr(chunked_users, handle_single_chunk)
 }
 
 #' Safely get follower list of Twitter users
@@ -116,42 +125,48 @@ safe_get_friends <- function(users, n = 5000, page = -1, verbose = FALSE,
 #'
 #' @importFrom rtweet get_followers
 #'
-safe_get_followers <- function(user, n = 5000, page = -1, verbose = FALSE,
+safe_get_followers <- function(users, n = 5000, page = -1, verbose = FALSE,
                                attempts = 5) {
 
-  num_requests <- length(user)
+  handle_single_chunk <- function(chunk) {
 
-  if (num_requests > 1)
-    stop(
-      "Must request followers of 1 user at a time.",
-      call. = FALSE
-    )
+    num_requests <- length(chunk)
 
-  for (i in 1:attempts) {
+    if (num_requests > 1)
+      stop(
+        "Must request followers of 1 user at a time.",
+        call. = FALSE
+      )
 
-    token <- find_token("followers/ids", num_requests)
+    for (i in 1:attempts) {
 
-    followers <- tryCatch({
-      rtweet::get_followers(user, token = token, verbose = verbose)
-    }, error = function(cond) {
-      warning(cond)
-      NULL
-    }, warning = function(cond) {
-      warning(cond)
+      token <- find_token("followers/ids", num_requests)
+
+      followers <- tryCatch({
+        rtweet::get_followers(chunk, page = page,
+                              token = token, verbose = verbose)
+      }, error = function(cond) {
+        warning(cond)
+        NULL
+      }, warning = function(cond) {
+        warning(cond)
       NULL
     })
 
-    if (!is.null(followers))
-      break
+      if (!is.null(followers))
+        break
+    }
+
+    if (all(is.na(followers$user_id)) || nrow(followers) == 0)
+      return(empty_edgelist())
+
+    colnames(followers) <- "from"
+    followers$to <- chunk
+
+    followers
   }
 
-  if (all(is.na(followers$user_id)) || nrow(followers) == 0)
-    return(empty_edgelist())
-
-  colnames(followers) <- "from"
-  followers$to <- user
-
-  followers
+  purrr::map_dfr(users, handle_single_chunk)
 }
 
 #' Safely lookup Twitter users
@@ -184,33 +199,40 @@ safe_get_followers <- function(user, n = 5000, page = -1, verbose = FALSE,
 #'
 safe_lookup_users <- function(users, attempts = 5) {
 
-  num_requests <- ceiling(length(users) / 100)
+  chunked_users <- split(users, ceiling(seq_along(users) / 90000))
 
-  if (num_requests > 900)
-    stop(
-      "Must request user data on <=90000 users at a time.",
-      call. = FALSE
-    )
+  handle_single_chunk <- function(chunk) {
 
-  for (i in 1:attempts) {
+    num_requests <- ceiling(length(chunk) / 100)
 
-    token <- find_token("users/lookup", num_requests)
+    if (num_requests > 900)
+      stop(
+        "Must request user data on <=90000 users at a time.",
+        call. = FALSE
+      )
 
-    user_data <- tryCatch({
-      rtweet::lookup_users(users = users, token = token)
-    }, error = function(cond) {
-      warning(cond)
-      NULL
-    }, warning = function(cond) {
-      warning(cond)
-      NULL
-    })
+    for (i in 1:attempts) {
 
-    if (!is.null(user_data))
-      break
+      token <- find_token("users/lookup", num_requests)
+
+      user_data <- tryCatch({
+        rtweet::lookup_users(users = chunk, token = token)
+      }, error = function(cond) {
+        warning(cond)
+        NULL
+      }, warning = function(cond) {
+        warning(cond)
+        NULL
+      })
+
+      if (!is.null(user_data))
+        break
+    }
+
+    user_data
   }
 
-  user_data
+  purrr::map_dfr(chunked_users, handle_single_chunk)
 }
 
 
@@ -245,43 +267,49 @@ safe_lookup_users <- function(users, attempts = 5) {
 safe_get_timelines <- function(user, n = 100, max_id = NULL, home = FALSE,
                                attempts = 5) {
 
-  num_requests <- length(user)
+  chunked_users <- split(user, ceiling(seq_along(user) / 900))
 
-  if (num_requests > 1500)
-    stop(
-      "Must request timelines of <=1500 users at a time.",
-      call. = FALSE
-    )
+  handle_single_chunk <- function(chunk) {
 
-  if (home)
-    stop("`home = TRUE` is not yet supported.", call. = FALSE)
+    num_requests <- length(chunk)
 
-  for (i in 1:attempts) {
-
-    log_debug(glue("safe_get_timelines(): Attempt {i}"))
-
-    token <- find_token("statuses/user_timeline", num_requests)
-
-    timeline_data <- tryCatch({
-      rtweet::get_timeline(
-        user = user,
-        max_id = max_id,
-        home = home,
-        n = n,
-        token = token
+    if (num_requests > 900)
+      stop(
+        "Must request timelines of <=900 users at a time.",
+        call. = FALSE
       )
-    }, error = function(cond) {
-      warning(cond)
-      NULL
-    }, warning = function(cond) {
-      warning(cond)
-      NULL
-    })
 
-    if (!is.null(timeline_data))
-      break
+    if (home)
+      stop("`home = TRUE` is not yet supported.", call. = FALSE)
+
+    for (i in 1:attempts) {
+
+      log_debug(glue("safe_get_timelines(): Attempt {i}"))
+
+      token <- find_token("statuses/user_timeline", num_requests)
+
+      timeline_data <- tryCatch({
+        rtweet::get_timeline(
+          user = chunk,
+          max_id = max_id,
+          home = home,
+          n = n,
+          token = token
+        )
+      }, error = function(cond) {
+        warning(cond)
+        NULL
+      }, warning = function(cond) {
+        warning(cond)
+        NULL
+      })
+
+      if (!is.null(timeline_data))
+        break
+    }
+
+    timeline_data
   }
 
-  timeline_data
+  purrr::map_dfr(chunked_users, handle_single_chunk)
 }
-
