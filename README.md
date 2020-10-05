@@ -9,6 +9,10 @@
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/#experimental)
 [![CRAN
 status](https://www.r-pkg.org/badges/version/socialsampler)](https://CRAN.R-project.org/package=socialsampler)
+[![Codecov test
+coverage](https://codecov.io/gh/alexpghayes/socialsampler/branch/master/graph/badge.svg)](https://codecov.io/gh/alexpghayes/socialsampler?branch=master)
+[![R build
+status](https://github.com/alexpghayes/socialsampler/workflows/R-CMD-check/badge.svg)](https://github.com/alexpghayes/socialsampler/actions)
 <!-- badges: end -->
 
 `socialsampler` extends [`rtweet`](https://rtweet.info/) to gracefully
@@ -36,20 +40,20 @@ example:
 library(socialsampler)
 
 safe_get_friends("alexpghayes")
-#> # A tibble: 1,009 x 2
-#>    from        to        
-#>    <chr>       <chr>     
-#>  1 alexpghayes 32400855  
-#>  2 alexpghayes 20855386  
-#>  3 alexpghayes 14204987  
-#>  4 alexpghayes 15807813  
-#>  5 alexpghayes 1352420582
-#>  6 alexpghayes 2176641060
-#>  7 alexpghayes 1123691436
-#>  8 alexpghayes 31638712  
-#>  9 alexpghayes 235957352 
-#> 10 alexpghayes 78923022  
-#> # … with 999 more rows
+#> # A tibble: 1,244 x 2
+#>    from        to                 
+#>    <chr>       <chr>              
+#>  1 alexpghayes 294710260          
+#>  2 alexpghayes 24096463           
+#>  3 alexpghayes 14636374           
+#>  4 alexpghayes 1096256122137137153
+#>  5 alexpghayes 1308811981         
+#>  6 alexpghayes 1897939710         
+#>  7 alexpghayes 780934633          
+#>  8 alexpghayes 20406724           
+#>  9 alexpghayes 1152655010871820288
+#> 10 alexpghayes 302667955          
+#> # ... with 1,234 more rows
 ```
 
 If you run into Twitter API rate limits, `socialsampler` will just wait

@@ -18,6 +18,8 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/#experimental)
 [![CRAN status](https://www.r-pkg.org/badges/version/socialsampler)](https://CRAN.R-project.org/package=socialsampler)
+[![Codecov test coverage](https://codecov.io/gh/alexpghayes/socialsampler/branch/master/graph/badge.svg)](https://codecov.io/gh/alexpghayes/socialsampler?branch=master)
+[![R build status](https://github.com/alexpghayes/socialsampler/workflows/R-CMD-check/badge.svg)](https://github.com/alexpghayes/socialsampler/actions)
 <!-- badges: end -->
 
 `socialsampler` extends [`rtweet`](https://rtweet.info/) to gracefully handle multiple tokens, to automatically use bearer tokens for increased sampling capacity, and to automatically retry failed API requests.
