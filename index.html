@@ -34,7 +34,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">socialsampler</a>
-        <span class="version label label-danger" data-toggle="tooltip" data-placement="bottom" title="Unreleased version">0.0.0.9002</span>
+        <span class="version label label-danger" data-toggle="tooltip" data-placement="bottom" title="Unreleased version">0.0.0.9003</span>
       </span>
     </div>
 
@@ -42,7 +42,7 @@
       <ul class="nav navbar-nav">
 <li>
   <a href="index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -53,7 +53,7 @@
 <ul class="nav navbar-nav navbar-right">
 <li>
   <a href="https://github.com/alexpghayes/socialsampler/">
-    <span class="fab fa fab fa-github fa-lg"></span>
+    <span class="fab fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -79,17 +79,17 @@
 <h2 class="hasAnchor">
 <a href="#installation" class="anchor"></a>Installation</h2>
 <p>You can install the development version of <code>socialsampler</code> from <a href="https://github.com/">GitHub</a> with:</p>
-<div class="sourceCode" id="cb1"><pre class="downlit">
-<span class="co"># install.packages("devtools")</span>
-<span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"alexpghayes/socialsampler"</span><span class="op">)</span></pre></div>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># install.packages("devtools")</span>
+<span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"alexpghayes/socialsampler"</span><span class="op">)</span></code></pre></div>
 </div>
 <div id="sampling-twitter-data-with-socialsampler" class="section level2">
 <h2 class="hasAnchor">
 <a href="#sampling-twitter-data-with-socialsampler" class="anchor"></a>Sampling Twitter data with <code>socialsampler</code>
 </h2>
 <p><code>socialsampler</code> provides (essentially) drop-in replacements for several <code>rtweet</code> functions. These drop-in functions follow the same naming conventions as <code>rtweet</code> functions, but with a <code>safe_*</code> prefix. For example:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit">
-<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/alexpghayes/socialsampler">socialsampler</a></span><span class="op">)</span>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/alexpghayes/socialsampler">socialsampler</a></span><span class="op">)</span>
 
 <span class="fu"><a href="reference/safe_get_friends.html">safe_get_friends</a></span><span class="op">(</span><span class="st">"alexpghayes"</span><span class="op">)</span>
 <span class="co">#&gt; # A tibble: 1,244 x 2</span>
@@ -105,7 +105,7 @@
 <span class="co">#&gt;  8 alexpghayes 20406724           </span>
 <span class="co">#&gt;  9 alexpghayes 1152655010871820288</span>
 <span class="co">#&gt; 10 alexpghayes 302667955          </span>
-<span class="co">#&gt; # ... with 1,234 more rows</span></pre></div>
+<span class="co">#&gt; # ... with 1,234 more rows</span></code></pre></div>
 <p>If you run into Twitter API rate limits, <code>socialsampler</code> will just wait for the rate limit to reset.</p>
 </div>
 <div id="registering-and-managing-your-tokens" class="section level2">
@@ -113,18 +113,18 @@
 <a href="#registering-and-managing-your-tokens" class="anchor"></a>Registering and managing your tokens</h2>
 <p>The major functionality of <code>socialsampler</code> is its ability to use multiple tokens for data collection, automatically using tokens with remaining API calls. Additionally, <code>socialsampler</code> uses both user tokens and bearer tokens. Again, this is automatic, and should at least double sampling capacity relative to <code>rtweet</code> for most API requests.</p>
 <p>Registering a token is straightforward:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit">
-<span class="fu"><a href="reference/register_token.html">register_token</a></span><span class="op">(</span>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="reference/register_token.html">register_token</a></span><span class="op">(</span>
   consumer_key <span class="op">=</span> <span class="st">"FILL_THIS_IN"</span>,
   consumer_secret <span class="op">=</span> <span class="st">"FILL_THIS_IN"</span>,
   access_token <span class="op">=</span> <span class="st">"FILL_THIS_IN"</span>,
   access_secret <span class="op">=</span> <span class="st">"FILL_THIS_IN"</span>
-<span class="op">)</span></pre></div>
+<span class="op">)</span></code></pre></div>
 <p>You only ever need to register a token once, and <code>socialsampler</code> won’t accidentally add any duplicate tokens to the token database. To see how many tokens you have, you can use:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit">
-<span class="fu"><a href="reference/inspect_token_db.html">inspect_token_db</a></span><span class="op">(</span><span class="op">)</span>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="reference/inspect_token_db.html">inspect_token_db</a></span><span class="op">(</span><span class="op">)</span>
 <span class="co">#&gt; Your socialsampler token database has</span>
-<span class="co">#&gt;   - 10 registered token(s)</span></pre></div>
+<span class="co">#&gt;   - 10 registered token(s)</span></code></pre></div>
 <p>You can import <code>rtweet</code> tokens into the database via <code><a href="reference/import_tokens_from_rtweet.html">import_tokens_from_rtweet()</a></code>, and clear all tokens from the token database with <code><a href="reference/unregister_all_tokens.html">unregister_all_tokens()</a></code>.</p>
 <p>If no tokens have been registered with <code>socialsampler</code>, API calls will look for a token registered with <code>rtweet</code> and use that token instead, again automatically respecting rate limits and leveraging the corresponding bearer token. If you have not registered tokens either <code>socialsampler</code> or <code>rtweet</code> and you try to make an API request, you’ll get an error.</p>
 </div>
