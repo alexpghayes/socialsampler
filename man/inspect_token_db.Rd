@@ -14,7 +14,7 @@ and barring this, will give an error that tokens have
 been registered with neither \code{rtweet} or \code{socialsampler}.
 }
 \seealso{
-\code{\link[rtweet:get_token]{rtweet::get_token()}}, \code{\link[rtweet:create_token]{rtweet::create_token()}},
+\code{\link[rtweet:get_tokens]{rtweet::get_token()}}, \code{\link[rtweet:create_token]{rtweet::create_token()}},
 \code{\link[rtweet:bearer_token]{rtweet::bearer_token()}}
 
 Other tokens: 

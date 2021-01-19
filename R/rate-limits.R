@@ -21,6 +21,7 @@
 #' @export
 #'
 #' @importFrom dplyr filter arrange
+#' @importFrom logger log_debug
 find_token <- function(query, requests) {
 
   break_time <- 2

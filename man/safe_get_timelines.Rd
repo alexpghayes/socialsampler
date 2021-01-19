@@ -31,7 +31,7 @@ A tbl data frame of tweets data with users data attribute.
 }
 \description{
 \code{safe_get_timelines()} is a drop-in replacement for
-\code{\link[rtweet:get_timelines]{rtweet::get_timelines()}} that automatically respects
+\code{\link[rtweet:get_timeline]{rtweet::get_timelines()}} that automatically respects
 Twitter API rate limits and coordinates use of
 multiple Twitter access tokens that have been
 registered with \code{\link[=register_token]{register_token()}}. At the moment

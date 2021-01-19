@@ -235,6 +235,50 @@ safe_lookup_users <- function(users, attempts = 5) {
   purrr::map_dfr(chunked_users, handle_single_chunk)
 }
 
+#' Safely get the tweets favorite by a collection of users
+#'
+#' @export
+#'
+#' @importFrom rtweet get_favorites
+#'
+safe_get_favorites <- function(users, attempts = 1) {
+
+  chunked_users <- split(users, ceiling(seq_along(users) / 37))
+
+  handle_single_chunk <- function(chunk) {
+
+    num_requests <- length(chunk) * 2
+
+    if (num_requests > 75)
+      stop(
+        "Must request user data on <= 75 / 2 users at a time.",
+        call. = FALSE
+      )
+
+    for (i in 1:attempts) {
+
+      token <- find_token("favorites/list", num_requests)
+
+      user_data <- tryCatch({
+        rtweet::get_favorites(user = chunk, token = token)
+      }, error = function(cond) {
+        warning(cond)
+        NULL
+      }, warning = function(cond) {
+        warning(cond)
+        NULL
+      })
+
+      if (!is.null(user_data))
+        break
+    }
+
+    user_data
+  }
+
+  purrr::map_dfr(chunked_users, handle_single_chunk)
+}
+
 
 #' Safely sample Twitter user timelines
 #'
